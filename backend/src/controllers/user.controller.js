@@ -36,7 +36,6 @@ const registerUser = asyncHandler( async (req, res) => {
 
 
     const {fullName, email, username, password } = req.body
-    //console.log("email: ", email);
 
     if (
         [fullName, email, username, password].some((field) => field?.trim() === "")
@@ -51,11 +50,12 @@ const registerUser = asyncHandler( async (req, res) => {
     if (existedUser) {
         throw new ApiError(409, "User with email or username already exists")
     }
+    console.log(fullName,email,password,username);
     const user = await User.create({
         fullName,
         email, 
         password,
-        username: username.toLowerCase()
+        username,
     })
 
     const createdUser = await User.findById(user._id).select(

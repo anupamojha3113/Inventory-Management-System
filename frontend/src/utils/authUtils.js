@@ -15,12 +15,12 @@ export const loginUser = async (email, password) => {
   }
 };
 
-export const registerUser = async (fullName, email, password) => {
+export const registerUser = async (name, fullName, email, password) => {
   try {
-    const res = await axios.post('/api/user/register', { fullName, email, password });
+    const res = await axios.post('/api/user/register', { username: name, fullName, email, password });
     if (res.data.success) {
-      const { refreshToken, accessToken, userobject } = res.data.data;
-      return { userobject, accessToken, refreshToken };
+      console.log(res.data.data);
+      return res.data.data
     } else {
       throw new Error('Registration failed');
     }

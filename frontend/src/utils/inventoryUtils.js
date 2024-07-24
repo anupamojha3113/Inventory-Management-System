@@ -19,7 +19,9 @@ export const deleteInventoryItem = async (id) => {
 
 // Fetch an inventory item by ID
 export const fetchInventoryById = async (id) => {
-  const response = await fetch(`/api/inventory/${id}`);
+  const response = await fetch(`/api/inventory/getInventoryById/${id}`,{
+      method: 'GET',
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch inventory item');
   }

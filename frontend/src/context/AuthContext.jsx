@@ -14,8 +14,8 @@ export const AuthProvider = ({ children }) => {
 
     if (storedUser && storedAccessToken && storedRefreshToken) {
       try {
-        const userObject = JSON.parse(storedUser);
-        setUser(userObject);
+        const fullName = JSON.parse(storedUser);
+        setUser(fullName);
         setAccessToken(storedAccessToken);
         setRefreshToken(storedRefreshToken);
       } catch (error) {
@@ -27,13 +27,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (userData, accessToken, refreshToken) => {
-    setUser(userData);
-    setAccessToken(accessToken);
-    setRefreshToken(refreshToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+  const login = (data) => {
+    setUser(data.fullName);
+    setAccessToken(data.accessToken);
+    setRefreshToken(data.refreshToken);
+    localStorage.setItem('user', JSON.stringify(fullName));
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
   };
 
   const logout = () => {

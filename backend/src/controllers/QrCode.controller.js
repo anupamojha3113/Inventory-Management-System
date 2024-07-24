@@ -35,6 +35,49 @@ const getAllInventory = async (req, res) => {
     }
 };
 
+const getInventoryById = async (req, res) => {
+    console.log("in");
+    try {
+        // Extract the ID from the request parameters
+        const { id } = req.params;
+        console.log(id);
+        // Fetch the specific inventory item by ID and populate the qrIdentifier field
+        const inventoryItem = await Inventory.findById(id).populate('qrIdentifier').exec();
+
+        // Check if the item was found
+        if (!inventoryItem) {
+            return res.status(404).json({
+                success: false,
+                message: 'Inventory item not found'
+            });
+        }
+
+        // Format the response to include QR code image as a base64 string
+        const formattedItem = {
+            _id: inventoryItem._id,
+            name: inventoryItem.name,
+            partNumber: inventoryItem.partNumber,
+            dateReceived: inventoryItem.dateReceived,
+            dateDispatch: inventoryItem.dateDispatch,
+            balanceItems: inventoryItem.balanceItems,
+            qrCodeUrl: inventoryItem.qrIdentifier ? `data:image/png;base64,${inventoryItem.qrIdentifier.qrCodeImage.toString('base64')}` : null, // Convert buffer to base64 string
+        };
+
+        res.status(200).json({
+            success: true,
+            data: formattedItem,
+            message: 'Inventory item fetched successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch inventory item',
+            error: error.message
+        });
+    }
+};
+
+
 const createInventory = async (req, res) => {
     const { name, dateReceived, balanceItems } = req.body;
 
@@ -79,70 +122,56 @@ const createInventory = async (req, res) => {
 
 const updateInventory = async (req, res) => {
     const { id } = req.params;
-    const { title, completed, qrCode } = req.body;
+    const { name, partNumber, dateReceived, dateDispatch, balanceItems } = req.body;
 
     try {
-        let updatedinventory;
+        // Fetch the specific inventory item by ID and populate the qrIdentifier field
+        const inventoryItem = await Inventory.findById(id).populate('qrIdentifier').exec();
 
-        // Check if qrCode is provided in the request body
-        if (qrCode) {
-            // Generate a new QR code
-            const qrCodeData = JSON.stringify({ title, completed });
-            const qrCodeBuffer = await generateQRCode(qrCodeData);
-
-            // Save the new QR code in QRCode schema
-            const newQRCodeId = await saveQRCodeToDB(qrCodeBuffer);
-
-            // Find the existing QR code associated with the inventory item
-            const existingQRCodeId = (await Inventory.findById(id)).qrCode;
-
-            // If there's an existing QR code associated with the inventory item, delete it
-            if (existingQRCodeId) {
-                await deleteQRCodeFromDB(existingQRCodeId);
-            }
-
-            // Update the inventory item with the new QR code ID
-            updatedinventory = await Inventory.findByIdAndUpdate(id, { title, completed, qrCode: newQRCodeId }, { new: true });
-
-            // Include the updated QR code image in the response
-            updatedinventory.QRCodeSchemaImage = qrCodeBuffer;
-        } else {
-            // If qrCode is not provided, only update the title and completed fields
-            updatedinventory = await Inventory.findByIdAndUpdate(id, { title, completed }, { new: true });
-
-            // Regenerate QR code if title is modified
-            const qrCodeData = JSON.stringify({ title: updatedinventory.title, completed });
-            const qrCodeBuffer = await generateQRCode(qrCodeData);
-
-            // Update the QR code associated with the inventory item
-            await updateQRCodeInDB(updatedinventory.QRCodeSchema, qrCodeBuffer);
-
-            // Include the updated QR code image in the response
-            updatedinventory.QRCodeSchemaImage = qrCodeBuffer;
+        // Check if the item was found
+        if (!inventoryItem) {
+            return res.status(404).json({
+                success: false,
+                message: 'Inventory item not found'
+            });
         }
 
-        // Check if the inventory item exists
-        if (!updatedinventory) {
-            return new ApiError(500, 'Failed to find inventory');
-        }
+        // Update the inventory item fields
+        inventoryItem.name = name;
+        inventoryItem.partNumber = partNumber;
+        inventoryItem.dateReceived = dateReceived;
+        inventoryItem.dateDispatch = dateDispatch;
+        inventoryItem.balanceItems = balanceItems;
 
-        // Construct the response object with QR code image included
-        const response = {
-            _id: updatedinventory._id,
-            title: updatedinventory.title,
-            completed: updatedinventory.completed,
-            qrCodeImage: updatedinventory.QRCodeSchemaImage
+        // Save the updated inventory item
+        await inventoryItem.save();
+
+        // Format the response to include QR code image as a base64 string
+        const formattedItem = {
+            _id: inventoryItem._id,
+            name: inventoryItem.name,
+            partNumber: inventoryItem.partNumber,
+            dateReceived: inventoryItem.dateReceived,
+            dateDispatch: inventoryItem.dateDispatch,
+            balanceItems: inventoryItem.balanceItems,
+            qrCodeUrl: inventoryItem.qrIdentifier ? `data:image/png;base64,${inventoryItem.qrIdentifier.qrCodeImage.toString('base64')}` : null, // Convert buffer to base64 string
         };
-
-        res.json(response);
+        res.status(200).json({
+            success: true,
+            data: formattedItem,
+            message: 'Inventory item updated successfully'
+        });
     } catch (error) {
-        console.error('Error updating inventory:', error);
-        return new ApiError(500, 'Failed to update inventory');
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update inventory item',
+            error: error.message
+        });
     }
 }
+
 const deleteInventory = async (req, res) => {
     const { id } = req.params;
-    console.log("in");
     try {
         const inventory = await Inventory.findById(id);
         if (!inventory) {
@@ -165,4 +194,4 @@ const deleteInventory = async (req, res) => {
         return new ApiError(500, 'Failed to delete inventory');
     }
 }
-export { getAllInventory, createInventory, updateInventory, deleteInventory };
+export { getAllInventory, getInventoryById, createInventory, updateInventory, deleteInventory };

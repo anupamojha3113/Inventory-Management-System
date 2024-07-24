@@ -3,8 +3,8 @@ import AuthContext from '../context/AuthContext';
 import { registerUser } from '../utils/authUtils';
 
 const RegisterCard = () => {
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
+  const [fullName, setfullName] = useState('');
+  const [username, setusername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,8 +27,8 @@ const RegisterCard = () => {
     }
 
     try {
-      const { userobject, accessToken, refreshToken } = await registerUser(fullName, username, email, password);
-      login(userobject, accessToken, refreshToken);
+      const data = await registerUser(fullName, username, email, password);
+      login(data);
       setAlertMessage('Registration successful!');
       setAlertType('success');
     } catch (error) {
@@ -52,17 +52,17 @@ const RegisterCard = () => {
             type="text"
             className="w-full p-2 border border-gray-300 rounded mt-1"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={(e) => setfullName(e.target.value)}
             required
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Username</label>
+          <label className="block text-gray-700">username</label>
           <input
             type="text"
             className="w-full p-2 border border-gray-300 rounded mt-1"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setusername(e.target.value)}
             required
           />
         </div>

@@ -1,11 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
 import { fetchInventory, deleteInventoryItem } from '../utils/inventoryUtils';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Home = () => {
   const { user } = useContext(AuthContext);
   const [inventory, setInventory] = useState([]);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getInventory = async () => {
+    try {
+      const data = await fetchInventory();
+      setInventory(data.data);
+    } catch (error) {
+      console.error('Failed to fetch inventory:', error);
+      setError('Failed to fetch inventory.');
+    }
+  };
 
   useEffect(() => {
     const getInventory = async () => {
@@ -17,18 +30,28 @@ const Home = () => {
         setError('Failed to fetch inventory.');
       }
     };
-
     getInventory();
   }, [inventory]);
 
+  useEffect(() => {
+    if (location.state?.fromUpdate) {
+      getInventory();
+    }
+  }, [location.state]);
+
   const handleDelete = async (id) => {
     try {
+      console.log("delete");
       await deleteInventoryItem(id);
       setInventory((prevInventory) => prevInventory.filter(item => item._id !== id));
     } catch (error) {
       console.error('Failed to delete inventory item:', error);
       setError('Failed to delete inventory item.');
     }
+  };
+
+  const handleUpdate = (id) => {
+    navigate(`/update-inventory/${id}`, { state: { fromUpdate: true } });
   };
 
   return (
@@ -62,12 +85,12 @@ const Home = () => {
                     <td className="py-2 px-4 border-b">
                       <a href={item.qrCodeUrl} download>Download</a>
                       {item.qrCodeUrl && (
-                        <img src={item.qrCodeUrl} alt="QR Code" className="mt-2 w-16 h-16"/>
+                        <img src={item.qrCodeUrl} alt="QR Code" className="mt-2 w-16 h-16" />
                       )}
                     </td>
                     <td className="py-2 px-4 border-b">
                       <button onClick={() => handleDelete(item._id)} className="text-red-500 hover:text-red-700 mr-2">Delete</button>
-                      <a href={`/update-inventory/${item._id}`} className="text-blue-500 hover:text-blue-700">Update</a>
+                      <button onClick={() => handleUpdate(item._id)} className="text-blue-500 hover:text-blue-700">Update</button>
                     </td>
                   </tr>
                 ))

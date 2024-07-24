@@ -19,7 +19,7 @@ function App() {
             <Route path="/register" element={<RegisterRoute />} />
             <Route path="/generate-qrcode" element={<GenerateQRCodeRoute />} />
             <Route path="/" element={<HomeRoute />} />
-            <Route path="/update-inventory/:id" element={<UpdateInventory />} /> {/* Add route for update */}
+            <Route path="/update-inventory/:id" element={<UpdateInventory />} /> 
           </Routes>
         </div>
       </Router>

@@ -26,7 +26,7 @@ const Navbar = () => {
       <div className="container mx-auto flex flex-wrap justify-between items-center">
         <div className="text-white text-center md:text-left mb-4 md:mb-0">
           <div className="text-lg md:text-xl font-semibold">
-            {user ? `Welcome, ${user.fullName}` : 'Welcome'} To Our
+            {user ? `Welcome, ${user}` : 'Welcome'} To Our
           </div>
           <div className="text-xl md:text-2xl font-bold">
             Inventory Management System
